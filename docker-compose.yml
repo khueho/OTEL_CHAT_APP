@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   frontend:
-    image: syedkamruzzaman/chatapp-frontend:latest
+    build: ./frontend
     ports:
       - "8080:80"
     depends_on:
@@ -11,9 +11,10 @@ services:
       - chat-network
     environment:
       - BACKEND_URL=http://backend:5001
+      - APP_NAME=chat-app
 
   backend:
-    image: syedkamruzzaman/chatapp-backend:latest
+    build: ./backend
     ports:
       - "5001:5001"
     depends_on:
@@ -23,6 +24,7 @@ services:
       - PORT=5001
       - NODE_ENV=production
       - JWT_SECRET=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJPbmxpbmUgSldUIEJ1aWxkZXIiLCJpYXQiOjE3MzI0NjA1NTEsImV4cCI6MTc2Mzk5NjU1MSwiYXVkIjoid3d3LmV4YW1wbGUuY29tIiwic3ViIjoianJvY2tldEBleGFtcGxlLmNvbSIsIkdpdmVuTmFtZSI6IkpvaG5ueSIsIlN1cm5hbWUiOiJSb2NrZXQiLCJFbWFpbCI6Impyb2NrZXRAZXhhbXBsZS5jb20iLCJSb2xlIjpbIk1hbmFnZXIiLCJQcm9qZWN0IEFkbWluaXN0cmF0b3IiXX0.YTeR6zLCKuOPjz5CYfwxW1gXp_wP1gAnN3qSMJIFQFg
+      - APP_NAME=chat-app
     networks:
       - chat-network
 
@@ -38,6 +40,27 @@ services:
     networks:
       - chat-network
 
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
 networks:
   chat-network:
     driver: bridge

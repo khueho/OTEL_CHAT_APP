@@ -10,11 +10,15 @@ import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import { app, server } from "./lib/socket.js";
+import { initiateTracing } from "./lib/tracing.js";
 
 dotenv.config();
 
 const PORT = process.env.PORT;
 const __dirname = path.resolve();
+const APP_NAME = process.env.APP_NAME;
+
+initiateTracing(APP_NAME);
 
 app.use(express.json());
 app.use(cookieParser());
