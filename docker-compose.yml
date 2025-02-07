@@ -7,11 +7,11 @@ services:
       - "8080:80"
     depends_on:
       - backend
-    networks:
-      - chat-network
     environment:
       - BACKEND_URL=http://backend:5001
       - APP_NAME=chat-app
+    networks:
+      - chat-network
 
   backend:
     build: ./backend
@@ -42,9 +42,24 @@ services:
 
   jaeger:
     image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    restart: unless-stopped
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+      - COLLECTOR_OTLP_ENABLED=true
     ports:
+      - "6831:6831/udp"
+      - "6832:6832/udp"
+      - "5778:5778"
       - "16686:16686"
+      - "4317:4317"
+      - "4318:4318"
+      - "14250:14250"
       - "14268:14268"
+      - "14269:14269"
+      - "9411:9411"
+    networks:
+      - chat-network
 
   prometheus:
     image: prom/prometheus
@@ -52,6 +67,8 @@ services:
       - "9090:9090"
     volumes:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+    - chat-network
 
   grafana:
     image: grafana/grafana
@@ -61,6 +78,9 @@ services:
       - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - prometheus
+    networks:
+      - chat-network
+
 networks:
   chat-network:
     driver: bridge
